@@ -4,26 +4,8 @@
     "title": "Building Modern Web Applications with Vue 3 and GitHub API",
     "summary": "A comprehensive guide to building dynamic web applications that leverage GitHub as a content management system, featuring Vue 3 composition API and modern development practices.",
     "date": "2024-01-19T10:00:00Z",
-    "previewImage": "vue-github-preview.png",
+    "previewImage": "my-article-preview.png",
     "tags": ["Vue.js", "GitHub API", "Web Development", "JavaScript"],
     "readTime": "15 min"
-  },
-  {
-    "id": "2",
-    "title": "Advanced Caching Strategies for Modern Web Apps",
-    "summary": "Explore various caching techniques to improve performance, reduce API calls, and provide offline functionality in your web applications.",
-    "date": "2024-01-15T14:30:00Z",
-    "previewImage": "caching-preview.png",
-    "tags": ["Performance", "Caching", "Web Development"],
-    "readTime": "10 min"
-  },
-  {
-    "id": "3",
-    "title": "Markdown-Powered Content Management",
-    "summary": "Why Markdown is the perfect format for developer-focused content and how to implement a Markdown-based CMS with image support and frontmatter.",
-    "date": "2024-01-10T09:00:00Z",
-    "previewImage": "markdown-preview.png",
-    "tags": ["Markdown", "CMS", "Content Strategy"],
-    "readTime": "8 min"
   }
 ]
