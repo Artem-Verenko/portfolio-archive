@@ -1,11 +1,14 @@
 ---
 title: "Building Modern Web Applications with Vue 3 and GitHub API"
 date: "2024-01-19"
+previewImage: "my-article-preview.png"
 tags: ["Vue.js", "GitHub API", "Web Development", "JavaScript"]
 summary: "A comprehensive guide to building dynamic web applications that leverage GitHub as a content management system, featuring Vue 3 composition API and modern development practices."
 ---
 
 # Building Modern Web Applications with Vue 3 and GitHub API
+
+![Architecture Diagram](./images/architecture-diagram.png)
 
 ## Introduction
 
@@ -178,6 +181,8 @@ const props = defineProps(["id"]);
 const { data: article, isLoading, error } = useArticle(props.id);
 </script>
 ```
+
+![Screenshot](./images/screenshot.png)
 
 ## Advanced Features
 
