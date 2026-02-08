@@ -1,0 +1,30 @@
+{
+  "genres": [
+    {
+      "name": "Artificial Intelligence",
+      "books": [
+        {
+          "id": 1,
+          "title": "AI 2027",
+          "author": "Daniel Kokotajlo, Scott Alexander",
+          "cover": "ai-2027.png",
+          "hasReview": true
+        },
+        {
+          "id": 2,
+          "title": "SITUATIONAL AWARENESS: The Decade Ahead",
+          "author": "Leopold Aschenbrenner",
+          "cover": "SITUATIONAL_AWARENESS.png",
+          "hasReview": true
+        },
+        {
+          "id": 3,
+          "title": "AI Superpowers: China, Silicon Valley, and the New World Order",
+          "author": "Kai-Fu Lee",
+          "cover": "AISuperpowers.jpg",
+          "hasReview": true
+        }
+      ]
+    }
+  ]
+}
