@@ -1,355 +1,156 @@
 ---
-title: "Building Modern Web Applications with Vue 3 and GitHub API"
-date: "2024-01-19"
+title: "Event-Driven Microservices with Dotnet and AWS, Lambda, Docker, Kafka, RabbitMQ, etc."
+date: "2026-02-09"
 previewImage: "my-article-preview.png"
-tags: ["Vue.js", "GitHub API", "Web Development", "JavaScript"]
-summary: "A comprehensive guide to building dynamic web applications that leverage GitHub as a content management system, featuring Vue 3 composition API and modern development practices."
+tags: ["AWS", "Lambda", "Microservices"]
+summary: "A comprehensive guide to building event-driven microservices using Dotnet and AWS, covering Lambda and other modern technologies."
 ---
 
-# Building Modern Web Applications with Vue 3 and GitHub API
-
-![Architecture Diagram](./images/architecture-diagram.png)
+# So, here they are - microservices
 
 ## Introduction
 
-In the evolving landscape of web development, the separation of content from code has become increasingly important. This article explores how to build a modern, performant web application using **Vue 3** and the **GitHub API** for content management.
+This short article is a collection of my notes from a course I recently took on Udemy [certificate](https://www.udemy.com/certificate/UC-a7d96506-2d7d-4625-b5e2-32cdfb66d81a/).
 
-## Why Use GitHub as a CMS?
+Below, I've organized my learnings into the style of **answers to common system design interview questions**. If you are preparing for an interview or just trying to make sense of the distributed chaos, this is for you.
 
-GitHub offers several compelling advantages when used as a content management system:
-
-- **Version Control**: Every content change is tracked with full Git history
-- **Collaboration**: Multiple contributors can work simultaneously with pull requests
-- **Free Hosting**: Content storage is free for public repositories
-- **API Access**: Robust RESTful API with excellent documentation
-- **Markdown Support**: Write content in a developer-friendly format
-- **Image Hosting**: Store images alongside your content
-
-## Architecture Overview
-
-Our architecture follows a clean separation of concerns:
-
-```javascript
-// Service Layer Pattern
-const contentService = {
-  async fetchArticle(id) {
-    // 1. Check cache first
-    const cached = cache.get(`article_${id}`);
-    if (cached) return cached;
-
-    // 2. Fetch from GitHub
-    const markdown = await github.getFile(`articles/article-${id}.md`);
-
-    // 3. Parse and cache
-    const parsed = markdownIt.render(markdown);
-    cache.set(`article_${id}`, parsed);
-
-    return parsed;
-  },
-};
-```
-
-### Key Components
-
-1. **GitHub Client** - Wraps Octokit for API calls
-2. **Cache Layer** - LocalStorage with TTL support
-3. **Markdown Parser** - Converts markdown to HTML
-4. **Vue Composables** - TanStack Query integration
-
-## Implementation Steps
-
-### Step 1: Setting Up GitHub Integration
-
-First, create a fine-grained personal access token:
-
-```bash
-# Required permissions:
-# - Repository: Contents (Read)
-# - No other permissions needed
-```
-
-Configure your environment:
-
-```env
-VITE_GITHUB_TOKEN=github_pat_YOUR_TOKEN
-VITE_GITHUB_OWNER=your-username
-VITE_GITHUB_REPO=content-repo
-VITE_GITHUB_BRANCH=main
-```
-
-### Step 2: Creating the Content Structure
-
-Organize your content repository:
-
-```
-content-repo/
-├── articles/
-│   ├── articles.json      # Manifest with metadata
-│   ├── article-1.md       # Markdown content
-│   ├── article-2.md
-│   └── images/
-│       └── diagram.png
-├── books/
-│   ├── db_books.json
-│   └── reviews/
-│       └── book-1.md
-└── cv/
-    └── resume.pdf
-```
-
-### Step 3: Implementing the Cache Layer
-
-Caching is crucial for performance and offline support:
-
-```javascript
-class CacheService {
-  set(key, value, ttl = 3600000) {
-    const item = {
-      value,
-      expiry: Date.now() + ttl,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem(key, JSON.stringify(item));
-  }
-
-  get(key) {
-    const item = JSON.parse(localStorage.getItem(key));
-    if (!item) return null;
-
-    if (Date.now() > item.expiry) {
-      localStorage.removeItem(key);
-      return null;
-    }
-
-    return item.value;
-  }
-}
-```
-
-## Best Practices
-
-> **Important**: Always implement proper error handling and fallback mechanisms when working with external APIs.
-
-### Error Handling Strategy
-
-Follow these principles for robust error handling:
-
-1. **Graceful Degradation** - Show cached content when API fails
-2. **User Feedback** - Clear loading states and error messages
-3. **Retry Logic** - Automatic retry with exponential backoff
-4. **Rate Limiting** - Respect GitHub's API limits (5000 req/hour)
-
-### Performance Optimization
-
-- ✅ Implement aggressive caching (1-24 hour TTL)
-- ✅ Use TanStack Query for automatic background refetching
-- ✅ Lazy load content with Vue's `defineAsyncComponent`
-- ✅ Compress images before uploading to GitHub
-- ✅ Use GitHub's CDN for image delivery
-
-## Code Examples
-
-### Vue Composable with TanStack Query
-
-```javascript
-import { useQuery } from "@tanstack/vue-query";
-
-export function useArticle(id) {
-  return useQuery({
-    queryKey: ["article", id],
-    queryFn: () => ArticleService.getArticle(id),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 60 * 60 * 1000, // 1 hour
-    retry: 2,
-  });
-}
-```
-
-### Component Usage
-
-```vue
-<template>
-  <div v-if="isLoading">Loading...</div>
-  <div v-else-if="error">{{ error.message }}</div>
-  <article v-else class="markdown-body" v-html="article.html" />
-</template>
-
-<script setup>
-import { useArticle } from "@/composables/useContent";
-
-const props = defineProps(["id"]);
-const { data: article, isLoading, error } = useArticle(props.id);
-</script>
-```
-
-![Screenshot](./images/screenshot.png)
-
-## Advanced Features
-
-### Image Path Resolution
-
-Automatically resolve relative image paths in markdown:
-
-```javascript
-// Before: ![Diagram](./images/diagram.png)
-// After: https://raw.githubusercontent.com/user/repo/main/articles/images/diagram.png
-
-markdownIt.renderer.rules.image = (tokens, idx) => {
-  const src = tokens[idx].attrs[0][1];
-  if (isRelativePath(src)) {
-    return resolveGitHubUrl(src);
-  }
-  return defaultRender(tokens, idx);
-};
-```
-
-### Syntax Highlighting
-
-Use Prism.js or highlight.js for beautiful code blocks:
-
-```python
-def fibonacci(n):
-    """Generate Fibonacci sequence up to n"""
-    a, b = 0, 1
-    while a < n:
-        print(a, end=' ')
-        a, b = b, a + b
-    print()
-
-fibonacci(100)
-```
-
-## Common Pitfalls
-
-### Authentication Issues
-
-**Problem**: 401 Unauthorized errors
-
-**Solution**:
-
-- Verify token hasn't expired
-- Check token has Contents (Read) permission
-- Ensure token has access to repository
-
-### Rate Limiting
-
-**Problem**: 403 Rate Limit Exceeded
-
-**Solution**:
-
-- Implement caching to reduce API calls
-- Use authenticated requests (5000/hour vs 60/hour)
-- Monitor rate limit headers in responses
-
-### CORS Issues
-
-**Problem**: CORS errors in development
-
-**Solution**:
-
-- GitHub API supports CORS out of the box
-- Ensure you're making requests to `api.github.com`
-- Don't proxy requests unnecessarily
-
-## Performance Metrics
-
-Based on real-world testing:
-
-| Metric            | Without Cache | With Cache |
-| ----------------- | ------------- | ---------- |
-| First Load        | ~800ms        | ~800ms     |
-| Subsequent Loads  | ~800ms        | ~50ms      |
-| Offline Support   | ❌            | ✅         |
-| API Calls/Session | ~50           | ~5         |
-
-## Deployment Considerations
-
-### Environment Variables
-
-Never commit your `.env.local` file! Use your hosting platform's environment variable system:
-
-- **Vercel**: Project Settings → Environment Variables
-- **Netlify**: Site Settings → Build & Deploy → Environment
-- **GitHub Pages**: Secrets in repository settings
-
-### Build Optimization
-
-```javascript
-// vite.config.js
-export default defineConfig({
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          "github-api": ["@octokit/rest"],
-          markdown: ["markdown-it"],
-          "vue-query": ["@tanstack/vue-query"],
-        },
-      },
-    },
-  },
-});
-```
-
-## Testing Strategy
-
-### Unit Tests
-
-```javascript
-import { describe, it, expect, vi } from "vitest";
-import { ArticleService } from "@/services/content/ArticleService";
-
-describe("ArticleService", () => {
-  it("should fetch article from cache", async () => {
-    const cacheService = vi.mock("CacheService");
-    cacheService.get.mockReturnValue({ title: "Test" });
-
-    const article = await ArticleService.getArticle("1");
-    expect(article.title).toBe("Test");
-  });
-});
-```
-
-### Integration Tests
-
-Use Playwright or Cypress to test the full workflow:
-
-```javascript
-test("should display article from GitHub", async ({ page }) => {
-  await page.goto("/blog/articles/1");
-  await expect(page.locator("h1")).toContainText("Article Title");
-  await expect(page.locator(".markdown-body")).toBeVisible();
-});
-```
-
-## Conclusion
-
-Using GitHub as a CMS for your Vue application provides a robust, version-controlled, and developer-friendly solution. The combination of Vue 3's Composition API, TanStack Query's data management, and GitHub's reliable infrastructure creates a powerful stack for modern web applications.
-
-### Key Takeaways
-
-- 🎯 **Separation of Concerns**: Content lives separately from code
-- 🚀 **Performance**: Aggressive caching reduces API calls
-- 🔄 **Version Control**: Full Git history for content changes
-- 💰 **Cost-Effective**: Free for public repositories
-- 🛠️ **Developer-Friendly**: Write in Markdown, manage with Git
-
-## Further Reading
-
-- [Vue 3 Composition API Documentation](https://vuejs.org/guide/extras/composition-api-faq.html)
-- [TanStack Query Guide](https://tanstack.com/query/latest)
-- [GitHub REST API Reference](https://docs.github.com/en/rest)
-- [Markdown-it Documentation](https://github.com/markdown-it/markdown-it)
-- [Fine-grained Tokens Guide](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
-
-## About the Author
-
-This article demonstrates the exact architecture used in my portfolio application. Feel free to explore the source code and adapt it for your own projects.
+![Udemy AV](./images/UC-a7d96506-2d7d-4625-b5e2-32cdfb66d81a.jpg)
 
 ---
 
-**Published**: January 19, 2024  
-**Last Updated**: January 19, 2024  
-**Reading Time**: ~15 minutes
+## 1. The Fundamentals
 
-_Questions or feedback? Open an issue on GitHub!_
+### Q: What is the actual difference between Monolithic and Microservices architectures?
+
+It comes down to coupling and deployment.
+
+- **The Monolith:** Think of this as "all eggs in one basket." All services and functions live in one massive application.
+  - **The Problem:** If you want to change just _one_ tiny service, you have to redeploy the _entire_ application. Worse, if one service fails (e.g., a memory leak in the invoice generator), it can crash the whole app.
+- **Service-Oriented Architecture (SOA):** This was the "middle evolution." Services were separated and often communicated via SOAP APIs. They maintained sessions, which meant high dependency and low resiliency.
+- **Microservices:** The modern standard. Services are fully separated and **stateless**. They communicate via lightweight events, messages, or RESTful APIs. Because they are decoupled, a failure in one doesn't kill the others.
+
+### Q: Do we need a microservice for every single function?
+
+**Short answer: No.**
+
+Please don't create a "CalculateTax" microservice just because you can. You should group functionality by **Business Domain**.
+
+We follow the **Single Responsibility Principle**: an entity should do only one job. In this context, that "job" is defined by the **Domain Boundary**—the line that separates one area of business activity (like "Inventory") from another (like "Billing"). Respect the boundary, and don't fragment your logic too much.
+
+### Q: Serverless vs. Containers vs. VMs — what should I choose?
+
+It depends on how much control you need versus how much management you want to avoid.
+
+1.  **Serverless (FaaS - AWS Lambda):**
+    - _Concept:_ You write code (functions), and the cloud provider handles everything else.
+    - _Best For:_ Event-driven tasks (image processing), irregular traffic, or "glue" code.
+    - _Pros:_ Scales to zero (costs nothing when idle), zero server management.
+2.  **Containerized (Docker/K8s):**
+    - _Concept:_ You package code + dependencies into a lightweight box.
+    - _Best For:_ Long-running services, complex apps, specific OS requirements.
+    - _Pros:_ Industry standard, portable, fast startup.
+3.  **Virtual Machines (EC2):**
+    - _Concept:_ A full virtual server with its own OS.
+    - _Best For:_ Legacy migrations or specialized high-performance needs.
+    - _Cons:_ Slow startup, expensive OS overhead.
+
+---
+
+## 2. Communication Patterns
+
+### Q: How should services talk to each other? APIs, Messages, or Events?
+
+This is the most critical decision in distributed systems. Here is the breakdown:
+
+**1. APIs (REST / gRPC)**
+
+- **Concept:** _"Do this now."_
+- **Type:** Synchronous (Request/Response).
+- **Analogy:** A **phone call**. You ask a question and stay on the line waiting for the answer. Use this when you need an immediate response (e.g., logging in).
+
+**2. Messages (Commands)**
+
+- **Concept:** _"Do this task."_
+- **Type:** Asynchronous.
+- **Analogy:** An **email to a specific coworker**. You send the task and go back to work; they handle it when they can. Use this to decouple services when a specific action is required.
+
+**3. Events**
+
+- **Concept:** _"Something happened."_
+- **Type:** Asynchronous Broadcast.
+- **Analogy:** A **Twitter/X post**. You announce "Order Created," and you don't care who listens or what they do with the info. This provides the highest level of decoupling.
+
+### Q: What is the Fan Out Pattern?
+
+This is where events shine. A microservice publishes a **single** event to an Event Bus (like AWS SNS). The bus then "fans out" that event, pushing it to multiple subscribers concurrently.
+
+**Benefit:** One action (User Signs Up) can trigger multiple background processes simultaneously (Send Welcome Email + Update Analytics + Create Wallet) without the Sign-Up service knowing about them.
+
+---
+
+## 3. Infrastructure & Patterns
+
+### Q: Why do we need an API Gateway?
+
+Think of the API Gateway as the "Front Door" or the hotel receptionist. Instead of clients (mobile/web) talking to 50 different microservices, they talk to one Gateway.
+
+- **Security:** It handles Authentication/Authorization centrally.
+- **Simplification:** It can combine multiple internal API calls into one response for the client.
+- **Traffic:** It handles rate limiting and throttling.
+
+### Q: What is the "Microservice Chassis" pattern?
+
+If you have 20 microservices, you don't want to copy-paste the code for logging, security, and health checks 20 times.
+**The Chassis** is a "foundation" framework that handles these **cross-cutting concerns**.
+
+- **Workflow:** You create a "Service Template" based on the Chassis. When you start a new project (e.g., Order Service), you copy the template. You get logging, tracing, and config out of the box and focus strictly on business logic.
+
+### Q: How is the Sidecar Pattern different from the Chassis?
+
+The Chassis is part of your code (a library). **The Sidecar** sits _next_ to your code.
+
+- **Analogy:** A motorcycle with a sidecar. The app is the bike; the sidecar provides extra tools.
+- **Implementation:** You deploy a secondary container alongside your main app container (in the same Kubernetes Pod). The sidecar handles things like HTTPS proxying, logging agents, or config updates.
+- **Benefit:** You can add functionality to legacy apps without touching their source code.
+
+---
+
+## 4. Resilience & Workflow
+
+### Q: How do we prevent a "Retry Storm"? (Idempotency)
+
+In distributed systems, a service might receive the exact same message twice (e.g., network retries). If that message is "Pay $50," processing it twice is a disaster.
+
+**The Idempotent Consumer:**
+
+1.  Every event gets a **Unique ID** (e.g., Message ID).
+2.  The service checks a database table: _"Have I seen ID 123 before?"_
+3.  If yes → Ignore. If no → Process and save the ID.
+
+### Q: What happens when a service keeps failing? (Circuit Breaker)
+
+If Service A depends on Service B, and Service B is down, Service A shouldn't keep hammering it with requests. It needs a **Circuit Breaker**.
+
+- **Closed (Healthy):** Traffic flows normally.
+- **Open (Faulty):** Errors exceeded the threshold. The breaker "trips." Requests are blocked immediately to prevent system crash and give Service B time to recover.
+- **Half-Open (Testing):** After a timeout, let a few requests through to test if the service is back online.
+
+### Q: Choreography vs. Orchestration: Who is in charge?
+
+This is about how you manage complex workflows involving multiple services.
+
+**1. Choreography (Decentralized)**
+
+- **Analogy:** **Dancers on a stage.** They know their steps and react to the music (events). No one is shouting instructions.
+- **Pros:** Smart services, dumb pipes. Highly decoupled.
+- **Cons:** Hard to visualize the whole process.
+
+**2. Orchestration (Centralized)**
+
+- **Analogy:** **An Orchestra.** A Conductor (Orchestrator) tells every musician exactly when to play.
+- **Pros:** Central control, easy to handle rollbacks and errors.
+- **Cons:** Tighter coupling; the Orchestrator can become a bottleneck.
+
+---
+
+_Note: These concepts form the backbone of modern event-driven architecture. Whether you are using AWS Lambda, Docker, or Kafka, these patterns remain the same._

@@ -1,11 +1,11 @@
 [
   {
     "id": "1",
-    "title": "Building Modern Web Applications with Vue 3 and GitHub API",
-    "summary": "A comprehensive guide to building dynamic web applications that leverage GitHub as a content management system, featuring Vue 3 composition API and modern development practices.",
-    "date": "2024-01-19T10:00:00Z",
+    "title": "Event-Driven Microservices with Dotnet and AWS, Lambda, Docker, Kafka, RabbitMQ, etc.",
+    "summary": "A comprehensive guide to building event-driven microservices using Dotnet and AWS, covering Lambda, Docker, Kafka, RabbitMQ, and other modern technologies.",
+    "date": "2026-02-09",
     "previewImage": "my-article-preview.png",
-    "tags": ["Vue.js", "GitHub API", "Web Development", "JavaScript"],
+    "tags": ["AWS", "Lambda", "Microservices"],
     "readTime": "15 min"
   }
 ]
