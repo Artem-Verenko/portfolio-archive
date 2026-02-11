@@ -8,32 +8,40 @@ summary: "A comprehensive guide to building event-driven microservices using Dot
 
 # So, here they are - microservices
 
-## Introduction
-
 This short article is a collection of my notes from a course I recently took on Udemy [certificate](https://www.udemy.com/certificate/UC-a7d96506-2d7d-4625-b5e2-32cdfb66d81a/).
 
-Below, I've organized my learnings into the style of **answers to common system design interview questions**. If you are preparing for an interview or just trying to make sense of the distributed chaos, this is for you.
+Below, I've organized my learnings into the style of **answers to common system design interview questions**.
 
 ![Udemy AV](./images/UC-a7d96506-2d7d-4625-b5e2-32cdfb66d81a.jpg)
 
 ---
 
-## 1. The Fundamentals
+## 1. Microservices VS Monolithic Application
 
 ### Q: What is the actual difference between Monolithic and Microservices architectures?
 
-It comes down to coupling and deployment.
+## Comparison of Software Architectures
 
-- **The Monolith:** Think of this as "all eggs in one basket." All services and functions live in one massive application.
-  - **The Problem:** If you want to change just _one_ tiny service, you have to redeploy the _entire_ application. Worse, if one service fails (e.g., a memory leak in the invoice generator), it can crash the whole app.
-- **Service-Oriented Architecture (SOA):** This was the "middle evolution." Services were separated and often communicated via SOAP APIs. They maintained sessions, which meant high dependency and low resiliency.
+| Criterion           | Monolithic                                               | Service-Oriented (SOA)                                     | Microservices                                                         |
+| :------------------ | :------------------------------------------------------- | :--------------------------------------------------------- | :-------------------------------------------------------------------- |
+| **Coupling**        | **Tight:** Components are deeply interdependent.         | **Medium:** Services are linked via a common bus (ESB).    | **Loose:** Services are fully independent and decoupled.              |
+| **Scalability**     | **Vertical:** Must scale the entire application at once. | **Horizontal:** Scaling of individual large services.      | **Granular:** Scale only the specific services that need it.          |
+| **Communication**   | In-memory function calls (fast but rigid).               | Heavy protocols like SOAP, WSDL, and Enterprise Bus.       | Lightweight protocols: REST, gRPC, or Message Brokers.                |
+| **Data Management** | **Single Shared DB:** One big database for everything.   | **Shared DB:** Often multiple services share one database. | **Database per Service:** Each service owns its private data.         |
+| **Deployment**      | **Big Bang:** One change requires a full re-deployment.  | **Coordinated:** Deployment of service groups.             | **Independent:** Continuous Delivery (CI/CD) for each service.        |
+| **Fault Tolerance** | **Low:** One bug can crash the entire system.            | **Moderate:** ESB can become a single point of failure.    | **High:** Fault isolation; if one service fails, others keep working. |
+
+---
+
+![diagram-1](./images/article-1-diagram-1.png)
+
+- **The Monolith:** Think of this as "all eggs in one basket." All services and functions live in one massive application. **The Problem:** If you want to change just _one_ tiny service, you have to redeploy the _entire_ application. If one service fails (e.g., a memory leak in the invoice generator), it can crash the whole app.
+- **Service-Oriented Architecture (SOA):** This was the "middle evolution." Services were separated and often communicated via SOAP APIs. They **maintained sessions**, which meant high dependency and low resiliency.
 - **Microservices:** The modern standard. Services are fully separated and **stateless**. They communicate via lightweight events, messages, or RESTful APIs. Because they are decoupled, a failure in one doesn't kill the others.
 
 ### Q: Do we need a microservice for every single function?
 
-**Short answer: No.**
-
-Please don't create a "CalculateTax" microservice just because you can. You should group functionality by **Business Domain**.
+Don't create a "CalculateTax" microservice just because you can. You should group functionality by **Business Domain**.
 
 We follow the **Single Responsibility Principle**: an entity should do only one job. In this context, that "job" is defined by the **Domain Boundary**—the line that separates one area of business activity (like "Inventory") from another (like "Billing"). Respect the boundary, and don't fragment your logic too much.
 
@@ -59,6 +67,8 @@ It depends on how much control you need versus how much management you want to a
 ## 2. Communication Patterns
 
 ### Q: How should services talk to each other? APIs, Messages, or Events?
+
+![diagram-2](./images/article-1-diagram-2.png)
 
 This is the most critical decision in distributed systems. Here is the breakdown:
 
@@ -86,7 +96,7 @@ This is where events shine. A microservice publishes a **single** event to an Ev
 
 **Benefit:** One action (User Signs Up) can trigger multiple background processes simultaneously (Send Welcome Email + Update Analytics + Create Wallet) without the Sign-Up service knowing about them.
 
----
+## ![diagram-3](./images/article-1-diagram-3.png)
 
 ## 3. Infrastructure & Patterns
 
@@ -130,6 +140,7 @@ In distributed systems, a service might receive the exact same message twice (e.
 ### Q: What happens when a service keeps failing? (Circuit Breaker)
 
 If Service A depends on Service B, and Service B is down, Service A shouldn't keep hammering it with requests. It needs a **Circuit Breaker**.
+![diagram-4](./images/article-1-diagram-4.png)
 
 - **Closed (Healthy):** Traffic flows normally.
 - **Open (Faulty):** Errors exceeded the threshold. The breaker "trips." Requests are blocked immediately to prevent system crash and give Service B time to recover.
@@ -153,4 +164,4 @@ This is about how you manage complex workflows involving multiple services.
 
 ---
 
-_Note: These concepts form the backbone of modern event-driven architecture. Whether you are using AWS Lambda, Docker, or Kafka, these patterns remain the same._
+\_Note: These concepts form the backbone of modern event-driven architecture. Whether you are using AWS Lambda, Docker, or Kafka, these patterns remain the same.
