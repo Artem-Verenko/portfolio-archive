@@ -35,9 +35,11 @@ Below, I've organized my learnings into the style of **answers to common system 
 
 ![diagram-1](./images/article-1-diagram-1.png)
 
-- **The Monolith:** Think of this as "all eggs in one basket." All services and functions live in one massive application. **The Problem:** If you want to change just _one_ tiny service, you have to redeploy the _entire_ application. If one service fails (e.g., a memory leak in the invoice generator), it can crash the whole app.
-- **Service-Oriented Architecture (SOA):** This was the "middle evolution." Services were separated and often communicated via SOAP APIs. They **maintained sessions**, which meant high dependency and low resiliency.
-- **Microservices:** The modern standard. Services are fully separated and **stateless**. They communicate via lightweight events, messages, or RESTful APIs. Because they are decoupled, a failure in one doesn't kill the others.
+**The Monolith:** Think of this as "all eggs in one basket." All services and functions live in one massive application. **The Problem:** If you want to change just _one_ tiny service, you have to redeploy the _entire_ application. If one service fails (e.g., a memory leak in the invoice generator), it can crash the whole app.
+
+**Service-Oriented Architecture (SOA):** This was the "middle evolution." Services were separated and often communicated via SOAP APIs. They **maintained sessions**, which meant high dependency and low resiliency.
+
+**Microservices:** The modern standard. Services are fully separated and **stateless**. They communicate via lightweight events, messages, or RESTful APIs. Because they are decoupled, a failure in one doesn't kill the others.
 
 ### Q: Do we need a microservice for every single function?
 
@@ -49,18 +51,11 @@ We follow the **Single Responsibility Principle**: an entity should do only one 
 
 It depends on how much control you need versus how much management you want to avoid.
 
-1.  **Serverless (FaaS - AWS Lambda):**
-    - _Concept:_ You write code (functions), and the cloud provider handles everything else.
-    - _Best For:_ Event-driven tasks (image processing), irregular traffic, or "glue" code.
-    - _Pros:_ Scales to zero (costs nothing when idle), zero server management.
-2.  **Containerized (Docker/K8s):**
-    - _Concept:_ You package code + dependencies into a lightweight box.
-    - _Best For:_ Long-running services, complex apps, specific OS requirements.
-    - _Pros:_ Industry standard, portable, fast startup.
-3.  **Virtual Machines (EC2):**
-    - _Concept:_ A full virtual server with its own OS.
-    - _Best For:_ Legacy migrations or specialized high-performance needs.
-    - _Cons:_ Slow startup, expensive OS overhead.
+| Deployment Type                    | Concept                                                                     | Best For                                                                  | Key Characteristics                                               |
+| :--------------------------------- | :-------------------------------------------------------------------------- | :------------------------------------------------------------------------ | :---------------------------------------------------------------- |
+| **Serverless (FaaS - AWS Lambda)** | You write code (functions), and the cloud provider handles everything else. | Event-driven tasks (image processing), irregular traffic, or "glue" code. | Scales to zero (costs nothing when idle), zero server management. |
+| **Containerized (Docker/K8s)**     | You package code + dependencies into a lightweight box.                     | Long-running services, complex apps, specific OS requirements.            | Industry standard, portable, fast startup.                        |
+| **Virtual Machines (EC2)**         | A full virtual server with its own OS.                                      | Legacy migrations or specialized high-performance needs.                  | Slow startup, expensive OS overhead.                              |
 
 ---
 
@@ -72,23 +67,11 @@ It depends on how much control you need versus how much management you want to a
 
 This is the most critical decision in distributed systems. Here is the breakdown:
 
-**1. APIs (REST / gRPC)**
-
-- **Concept:** _"Do this now."_
-- **Type:** Synchronous (Request/Response).
-- **Analogy:** A **phone call**. You ask a question and stay on the line waiting for the answer. Use this when you need an immediate response (e.g., logging in).
-
-**2. Messages (Commands)**
-
-- **Concept:** _"Do this task."_
-- **Type:** Asynchronous.
-- **Analogy:** An **email to a specific coworker**. You send the task and go back to work; they handle it when they can. Use this to decouple services when a specific action is required.
-
-**3. Events**
-
-- **Concept:** _"Something happened."_
-- **Type:** Asynchronous Broadcast.
-- **Analogy:** A **Twitter/X post**. You announce "Order Created," and you don't care who listens or what they do with the info. This provides the highest level of decoupling.
+| Communication Type      | Concept                 | Type                           | Analogy & Use Case                                                                                                                                                          |
+| :---------------------- | :---------------------- | :----------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **APIs (REST / gRPC)**  | _"Do this now."_        | Synchronous (Request/Response) | A **phone call**. You ask a question and stay on the line waiting for the answer. Use this when you need an immediate response (e.g., logging in).                          |
+| **Messages (Commands)** | _"Do this task."_       | Asynchronous                   | An **email to a specific coworker**. You send the task and go back to work; they handle it when they can. Use this to decouple services when a specific action is required. |
+| **Events**              | _"Something happened."_ | Asynchronous Broadcast         | A **Twitter/X post**. You announce "Order Created," and you don't care who listens or what they do with the info. This provides the highest level of decoupling.            |
 
 ### Q: What is the Fan Out Pattern?
 
@@ -104,9 +87,11 @@ This is where events shine. A microservice publishes a **single** event to an Ev
 
 Think of the API Gateway as the "Front Door" or the hotel receptionist. Instead of clients (mobile/web) talking to 50 different microservices, they talk to one Gateway.
 
-- **Security:** It handles Authentication/Authorization centrally.
-- **Simplification:** It can combine multiple internal API calls into one response for the client.
-- **Traffic:** It handles rate limiting and throttling.
+| Capability         | Description                                                                  |
+| :----------------- | :--------------------------------------------------------------------------- |
+| **Security**       | It handles Authentication/Authorization centrally.                           |
+| **Simplification** | It can combine multiple internal API calls into one response for the client. |
+| **Traffic**        | It handles rate limiting and throttling.                                     |
 
 ### Q: What is the "Microservice Chassis" pattern?
 
@@ -119,9 +104,11 @@ If you have 20 microservices, you don't want to copy-paste the code for logging,
 
 The Chassis is part of your code (a library). **The Sidecar** sits _next_ to your code.
 
-- **Analogy:** A motorcycle with a sidecar. The app is the bike; the sidecar provides extra tools.
-- **Implementation:** You deploy a secondary container alongside your main app container (in the same Kubernetes Pod). The sidecar handles things like HTTPS proxying, logging agents, or config updates.
-- **Benefit:** You can add functionality to legacy apps without touching their source code.
+| Aspect             | Description                                                                                                                                                                         |
+| :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Analogy**        | A motorcycle with a sidecar. The app is the bike; the sidecar provides extra tools.                                                                                                 |
+| **Implementation** | You deploy a secondary container alongside your main app container (in the same Kubernetes Pod). The sidecar handles things like HTTPS proxying, logging agents, or config updates. |
+| **Benefit**        | You can add functionality to legacy apps without touching their source code.                                                                                                        |
 
 ---
 
